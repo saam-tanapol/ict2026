@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เกมตอบปัญหา ICT ระดับมัธยมศึกษาตอนปลาย</title>
+    <title>เกมตอบปัญหา ICT ระดับประถมศึกษา</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap');
 
@@ -31,7 +31,7 @@
             max-width: 1100px;
             position: relative;
             margin-bottom: 30px;
-            padding-top: 35px; /* เผื่อพื้นที่ให้ปุ่มตั้งค่าด้านบน */
+            padding-top: 35px;
         }
 
         .title-group {
@@ -43,12 +43,7 @@
         h1 { margin: 10px 0; font-size: 2.2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
         h2 { font-size: 1.1rem; font-weight: 300; color: #b2bec3; margin: 0; }
 
-        /* กำหนดขนาดโลโก้ */
-        .logo {
-            width: 100px; /* ปรับลด-เพิ่มขนาดโลโก้ได้ที่นี่ */
-            height: auto;
-            object-fit: contain;
-        }
+        .logo { width: 120px; height: auto; object-fit: contain; }
 
         .btn-settings {
             position: absolute;
@@ -92,22 +87,12 @@
         /* โทนสีป้ายตามคะแนน */
         .card-50 { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); } /* ฟ้า */
         .card-100 { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); } /* เขียว */
-        .card-150 { background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%); color: #2d3436; } /* เหลือง (ข้อความเข้ม) */
+        .card-150 { background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%); color: #2d3436; } /* เหลือง */
         .card-200 { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); } /* แดง */
         .card-default { background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); }
 
-        .card:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 12px 20px rgba(0,0,0,0.4);
-        }
-
-        .card.opened {
-            background: #2d3436;
-            color: #636e72;
-            cursor: default;
-            transform: none;
-            box-shadow: inset 0 4px 8px rgba(0,0,0,0.5);
-        }
+        .card:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 12px 20px rgba(0,0,0,0.4); }
+        .card.opened { background: #2d3436; color: #636e72; cursor: default; transform: none; box-shadow: inset 0 4px 8px rgba(0,0,0,0.5); }
 
         .card-score {
             position: absolute;
@@ -145,10 +130,7 @@
             overflow-y: auto;
         }
 
-        @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         .badge-play { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 15px; background: #e17055; color: white;}
         .q-img-preview { max-width: 100%; max-height: 250px; border-radius: 10px; margin-bottom: 15px; object-fit: contain; }
@@ -160,6 +142,7 @@
         .btn-secondary { background: #b2bec3; color: #2d3436; }
         .btn-danger { background: #e74c3c; color: white; padding: 5px 10px; font-size: 0.9rem; }
         .btn:hover { opacity: 0.8; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* Edit Screen */
         #editScreen {
@@ -179,55 +162,41 @@
         
         .edit-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
 
-        .edit-item {
-            background: #f5f6fa;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 5px solid #0984e3;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
+        .edit-item { background: #f5f6fa; padding: 15px; border-radius: 8px; border-left: 5px solid #0984e3; display: flex; flex-direction: column; gap: 10px; }
         .edit-item label { font-weight: bold; font-size: 0.9rem; color: #636e72;}
         .edit-row { display: flex; gap: 15px; align-items: center; flex-wrap: wrap;}
         
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #dfe6e9;
-            border-radius: 5px;
-            font-family: 'Prompt', sans-serif;
-        }
+        input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #dfe6e9; border-radius: 5px; font-family: 'Prompt', sans-serif; }
         input[type="number"] { width: 100px; }
-        input[type="file"] { font-size: 0.9rem; }
         
         .image-preview-box { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
         .image-preview-box img { height: 60px; border-radius: 5px; border: 1px solid #ccc; }
+        
+        #loadingOverlay {
+            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.8); color: white; z-index: 2000;
+            justify-content: center; align-items: center; font-size: 2rem;
+        }
     </style>
 </head>
 <body>
 
+    <div id="loadingOverlay">กำลังโหลดข้อมูลจากฐานข้อมูล...</div>
+
     <!-- หน้าเกมหลัก -->
-     <!-- หน้าเกมหลัก -->
     <div id="gameScreen" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
         <div class="header-container">
-            
-            <!-- โลโก้ด้านซ้าย -->
+            <!-- โลโก้ซ้าย -->
             <img src="ppw512.png" alt="โลโก้โรงเรียน" class="logo">
-            
             <div class="title-group">
                 <h1>ตอบปัญหา ICT ระดับมัธยมศึกษาตอนปลาย</h1>
-            <h2>รอบชิงชนะเลิศ ณ โรงเรียนโพนทองพัฒนาวิทยา</h2>
-            <h2>วันที่ 7 สิงหาคม 2569 ณ ห้องคอมพิวเตอร์ 3</h2>
+                <h2>รอบชิงชนะเลิศ ณ โรงเรียนโพนทองพัฒนาวิทยา</h2>
+                <h2>วันที่ 7 สิงหาคม 2569 ณ ห้องคอมพิวเตอร์ 3</h2>
             </div>
-            
-            <!-- โลโก้ด้านขวา -->
+            <!-- โลโก้ขวา -->
             <img src="sci-logo.png" alt="โลโก้แผนก" class="logo">
-
             <button class="btn-settings" onclick="openEditScreen()">⚙️ ตั้งค่าคำถาม</button>
         </div>
-        
         <div class="board" id="board"></div>
     </div>
 
@@ -235,15 +204,11 @@
     <div class="modal" id="playModal">
         <div class="modal-content">
             <div id="playBadge" class="badge-play"></div>
-            
-            <!-- ส่วนแสดงรูปภาพ (ถ้ามี) -->
             <div id="playImageContainer" style="display:none;">
                 <img id="playImage" class="q-img-preview" src="">
             </div>
-            
             <div class="q-text" id="playQuestion"></div>
             <div class="a-text" id="playAnswer"></div>
-            
             <button class="btn btn-primary" id="btnShowAns" onclick="showAnswer()">ดูเฉลย</button>
             <button class="btn btn-secondary" onclick="closePlayModal()">ปิดหน้าต่าง</button>
         </div>
@@ -252,23 +217,41 @@
     <!-- หน้าตั้งค่าคำถาม (Edit Screen) -->
     <div id="editScreen">
         <div class="edit-header">
-            <h2>⚙️ ตั้งค่าคำถาม-คำตอบ (25 ป้าย)</h2>
+            <h2>⚙️ ตั้งค่าคำถาม-คำตอบ (ระบบ Cloud)</h2>
             <div>
-                <button class="btn btn-secondary" onclick="resetToDefault()">คืนค่าเริ่มต้น</button>
                 <button class="btn btn-secondary" onclick="closeEditScreen()">ยกเลิก</button>
-                <button class="btn btn-primary" onclick="saveQuestions()">💾 บันทึกข้อมูล</button>
+                <button class="btn btn-primary" id="btnSaveData" onclick="saveQuestionsToCloud()">💾 บันทึกขึ้น Cloud</button>
             </div>
         </div>
         <div class="edit-grid" id="editFormGrid"></div>
     </div>
 
-    <script>
-        // ข้อมูลเริ่มต้น 25 ข้อ (เพิ่ม properties image)
+    <!-- โหลด Firebase SDK แบบ Modular (ตัด Storage ออก ใช้แค่ Database) -->
+    <script type="module">
+        // 1. นำเข้า Firebase 
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // 2. >>> นำโค้ด Config จาก Firebase Console มาวางทับตรงนี้ <<<
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7OHNNp3pdjm9Q7LLN9fws6vVSbgGcUx4",
+            authDomain: "ict2026-quiz-3abc2.firebaseapp.com",
+            projectId: "ict2026-quiz-3abc2",
+            storageBucket: "ict2026-quiz-3abc2.firebasestorage.app",
+            messagingSenderId: "551408048786",
+            appId: "1:551408048786:web:5263d8ed77dcb78e6c644b"
+        };
+
+        // 3. เริ่มต้นระบบ Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ข้อมูลเริ่มต้น 25 ข้อ
         const defaultQuestions = [
             { score: 50, q: "จากรูปคือโปรแกรมชื่ออะไร ใช้สำหรับทำอะไร (สัญลักษณ์ตัว W)", a: "ไมโครซอฟท์ เวิร์ด (Microsoft Word)", image: "" },
             { score: 100, q: "จากรูปคือสัญลักษณ์ของโปรแกรมหรือแอพพลิเคชั่นใด ใช้ทำอะไร (สัญลักษณ์วงกลม C)", a: "Canva ใช้ออกแบบกราฟิก โปสเตอร์ สไลด์ งานนำเสนอ", image: "" },
             { score: 150, q: "3, 8, 14, 21, 29, A, B จงหา A+B", a: "86 (A=38, B=48)", image: "" },
-            { score: 200, q: "ให้นักเรียนเขียนชื่อ AI ที่นักเรียนรู้จักมาให้ได้มากที่สุด", a: "เช่น ChatGPT, Cl‎aude, Ge‎mini, DeepSeek, Siri", image: "" },
+            { score: 200, q: "ให้นักเรียนเขียนชื่อ AI ที่นักเรียนรู้จักมาให้ได้มากที่สุด", a: "เช่น ChatGPT, Claude, Gemini, DeepSeek, Siri", image: "" },
             { score: 50, q: "เมื่อคุณแชร์ตำแหน่งตัวเองผ่าน LINE หรือ Google Maps ระบบใช้เทคโนโลยีใด", a: "GPS", image: "" },
             { score: 100, q: "โปรแกรม Excel ใช้สูตร =SUM(10,20,30) จะได้คำตอบเท่าไร", a: "60", image: "" },
             { score: 150, q: "สัญลักษณ์ Flowchart รูปสี่เหลี่ยมด้านขนาน มีความหมายว่าอย่างไร?", a: "Input / output (รับข้อมูล / แสดงข้อมูล)", image: "" },
@@ -292,19 +275,49 @@
             { score: 100, q: "ไฟล์นามสกุล .mp4 เป็นไฟล์ประเภทใด?", a: "ไฟล์วิดีโอ", image: "" }
         ];
 
-        let questions = [];
+        let questions = JSON.parse(JSON.stringify(defaultQuestions));
 
-        function init() {
-            const saved = localStorage.getItem('ict_questions');
-            if (saved) {
-                questions = JSON.parse(saved);
-            } else {
-                questions = JSON.parse(JSON.stringify(defaultQuestions));
-            }
-            renderBoard();
+        // แสดงหน้าโหลด
+        function showLoading(text) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.innerText = text;
+            overlay.style.display = 'flex';
+        }
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
         }
 
-        // คืนค่าคลาสสีตามคะแนน
+        // ดึงข้อมูลจากฐานข้อมูล Firestore แบบทีละข้อ
+        async function loadDataFromCloud() {
+            showLoading("กำลังโหลดข้อมูลจากฐานข้อมูล...");
+            try {
+                // ดึงข้อมูลทั้งหมดใน Collection ict_quiz_board
+                const querySnapshot = await getDocs(collection(db, "ict_quiz_board"));
+                
+                if (!querySnapshot.empty) {
+                    querySnapshot.forEach((docSnap) => {
+                        // รูปแบบชื่อเอกสารคือ q_0, q_1, q_2 ...
+                        if(docSnap.id.startsWith('q_')) {
+                            const index = parseInt(docSnap.id.split('_')[1]);
+                            if(!isNaN(index) && index < 25) {
+                                questions[index] = docSnap.data();
+                            }
+                        }
+                    });
+                } else {
+                    // ถ้ายังไม่มีฐานข้อมูล (เปิดครั้งแรก) ให้บันทึกค่า Default ลงไปเลย
+                    await saveQuestionsToCloud(true); 
+                }
+            } catch (error) {
+                console.warn("Offline Mode or Firebase Config Error:", error);
+                // ไม่ต้อง Alert แล้วถ้าออฟไลน์ ให้ใช้ Default เล่นไปก่อนได้เลย
+            } finally {
+                renderBoard();
+                hideLoading();
+            }
+        }
+
+        // --- ฟังก์ชันสำหรับการเล่นเกม ---
         function getColorClass(score) {
             const s = parseInt(score);
             if(s === 50) return 'card-50';
@@ -314,17 +327,13 @@
             return 'card-default';
         }
 
-        // --- ระบบกระดานเกม (Game Board) ---
         function renderBoard() {
             const board = document.getElementById('board');
             board.innerHTML = '';
             questions.forEach((q, index) => {
                 const card = document.createElement('div');
                 card.className = `card ${getColorClass(q.score)}`;
-                card.innerHTML = `
-                    ${index + 1}
-                    <div class="card-score">${q.score} pts</div>
-                `;
+                card.innerHTML = `${index + 1}<div class="card-score">${q.score} pts</div>`;
                 card.onclick = () => openCard(index, card);
                 board.appendChild(card);
             });
@@ -336,7 +345,6 @@
             document.getElementById('playQuestion').innerText = q.q;
             document.getElementById('playAnswer').innerText = "เฉลย: " + q.a;
             
-            // แสดงรูปภาพถ้ามี
             const imgContainer = document.getElementById('playImageContainer');
             const imgTag = document.getElementById('playImage');
             if(q.image && q.image.trim() !== "") {
@@ -351,31 +359,11 @@
             document.getElementById('btnShowAns').style.display = 'inline-block';
             
             cardEl.classList.add('opened');
-            cardEl.className = 'card opened'; // ลบสีพื้นหลังออกเมื่อเปิดแล้ว
+            cardEl.className = 'card opened'; 
             document.getElementById('playModal').style.display = 'flex';
         }
 
-        function showAnswer() {
-            document.getElementById('playAnswer').style.display = 'block';
-            document.getElementById('btnShowAns').style.display = 'none';
-        }
-
-        function closePlayModal() {
-            document.getElementById('playModal').style.display = 'none';
-        }
-
-        // --- ระบบตั้งค่า (Edit Screen) ---
-        function openEditScreen() {
-            document.getElementById('gameScreen').style.display = 'none';
-            document.getElementById('editScreen').style.display = 'block';
-            renderEditForm();
-        }
-
-        function closeEditScreen() {
-            document.getElementById('editScreen').style.display = 'none';
-            document.getElementById('gameScreen').style.display = 'flex';
-        }
-
+        // --- ฟังก์ชันสำหรับ Edit Screen ---
         function renderEditForm() {
             const grid = document.getElementById('editFormGrid');
             grid.innerHTML = '';
@@ -383,7 +371,6 @@
                 const item = document.createElement('div');
                 item.className = 'edit-item';
                 
-                // รูปภาพ preview HTML
                 let imgPreviewHTML = '';
                 if(q.image && q.image.trim() !== "") {
                     imgPreviewHTML = `<img src="${q.image}"><button class="btn-danger" onclick="removeImage(${index})">ลบรูป</button>`;
@@ -393,12 +380,12 @@
                     <div class="edit-row">
                         <label style="width: 80px;">ป้ายที่ ${index + 1}</label>
                         <label>คะแนน:</label>
-                        <input type="number" id="score_${index}" value="${q.score}" title="50=ฟ้า, 100=เขียว, 150=เหลือง, 200=แดง">
+                        <input type="number" id="score_${index}" value="${q.score}">
                     </div>
                     <input type="text" id="q_${index}" value="${q.q.replace(/"/g, '&quot;')}" placeholder="คำถาม...">
                     <input type="text" id="a_${index}" value="${q.a.replace(/"/g, '&quot;')}" placeholder="เฉลย...">
                     <div class="edit-row">
-                        <label>แนบรูปภาพ:</label>
+                        <label>แนบรูปภาพใหม่:</label>
                         <input type="file" id="file_${index}" accept="image/*" onchange="handleImageUpload(event, ${index})">
                     </div>
                     <div class="image-preview-box" id="imgPreview_${index}">${imgPreviewHTML}</div>
@@ -407,7 +394,7 @@
             });
         }
 
-        // ระบบบีบอัดและอัปโหลดรูปภาพ
+        // ระบบบีบอัดภาพและแปลงเป็น Text (Base64) เพื่อเก็บบน Database แทน Storage
         function handleImageUpload(event, index) {
             const file = event.target.files[0];
             if(!file) return;
@@ -416,10 +403,10 @@
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    // สร้าง Canvas เพื่อย่อขนาดภาพ (ป้องกัน LocalStorage เต็ม)
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600;
-                    const MAX_HEIGHT = 450;
+                    // ลดขนาดภาพให้เล็กที่สุดเพื่อไม่ให้หนักฐานข้อมูล
+                    const MAX_WIDTH = 500;
+                    const MAX_HEIGHT = 400;
                     let width = img.width;
                     let height = img.height;
 
@@ -434,11 +421,10 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // แปลงเป็น Base64 (Quality 0.7)
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    questions[index].image = dataUrl; // อัปเดตใน Array
+                    // แปลงเป็น Base64 (Quality 0.6)
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                    questions[index].image = dataUrl;
                     
-                    // แสดง Preview
                     document.getElementById(`imgPreview_${index}`).innerHTML = `<img src="${dataUrl}"><button class="btn-danger" onclick="removeImage(${index})">ลบรูป</button>`;
                 }
                 img.src = e.target.result;
@@ -446,41 +432,69 @@
             reader.readAsDataURL(file);
         }
 
-        // ลบรูปภาพ
-        function removeImage(index) {
+        // บันทึกข้อมูลทั้งหมดลง Firestore ทีละเอกสาร (ป้องกันข้อมูลเกิน 1MB)
+        async function saveQuestionsToCloud(silent = false) {
+            if(!silent) showLoading("กำลังบันทึกข้อมูล...");
+            try {
+                if(!silent) {
+                    for (let i = 0; i < 25; i++) {
+                        questions[i].score = document.getElementById(`score_${i}`).value;
+                        questions[i].q = document.getElementById(`q_${i}`).value;
+                        questions[i].a = document.getElementById(`a_${i}`).value;
+                    }
+                }
+
+                // บันทึกแยกทีละข้อ q_0 ถึง q_24
+                const promises = [];
+                for (let i = 0; i < 25; i++) {
+                    const docRef = doc(db, "ict_quiz_board", "q_" + i);
+                    promises.push(setDoc(docRef, questions[i]));
+                }
+                
+                // รอให้บันทึกครบ 25 ข้อเสร็จพร้อมกัน
+                await Promise.all(promises);
+
+                if(!silent) {
+                    alert("บันทึกข้อมูลลงฐานข้อมูลส่วนกลางเรียบร้อยแล้ว!");
+                    renderBoard();
+                    closeEditScreen();
+                }
+            } catch (error) {
+                console.error("Error saving document: ", error);
+                if(!silent) alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลดขนาด/จำนวนรูปภาพลง");
+            } finally {
+                if(!silent) hideLoading();
+            }
+        }
+
+        // ลงทะเบียนฟังก์ชันให้ HTML เรียกใช้งานได้
+        window.openEditScreen = () => {
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('editScreen').style.display = 'block';
+            renderEditForm();
+        };
+        window.closeEditScreen = () => {
+            document.getElementById('editScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'flex';
+        };
+        window.showAnswer = () => {
+            document.getElementById('playAnswer').style.display = 'block';
+            document.getElementById('btnShowAns').style.display = 'none';
+        };
+        window.closePlayModal = () => {
+            document.getElementById('playModal').style.display = 'none';
+        };
+        window.removeImage = (index) => {
             questions[index].image = "";
             document.getElementById(`imgPreview_${index}`).innerHTML = "";
             document.getElementById(`file_${index}`).value = "";
-        }
+        };
+        window.handleImageUpload = handleImageUpload;
+        window.saveQuestionsToCloud = saveQuestionsToCloud;
+        window.openCard = openCard;
 
-        function saveQuestions() {
-            try {
-                for (let i = 0; i < 25; i++) {
-                    questions[i].score = document.getElementById(`score_${i}`).value;
-                    questions[i].q = document.getElementById(`q_${i}`).value;
-                    questions[i].a = document.getElementById(`a_${i}`).value;
-                }
-                localStorage.setItem('ict_questions', JSON.stringify(questions));
-                alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
-                renderBoard();
-                closeEditScreen();
-            } catch (e) {
-                // แจ้งเตือนกรณีหน่วยความจำเต็ม
-                alert("ไม่สามารถบันทึกได้! เนื่องจากขนาดรูปภาพรวมกันใหญ่เกินไป กรุณาลบรูปภาพบางส่วนออกแล้วลองใหม่");
-            }
-        }
-
-        function resetToDefault() {
-            if(confirm("คุณต้องการล้างข้อมูลที่แก้ไข และคืนค่ากลับเป็นชุดคำถามเริ่มต้นหรือไม่?")) {
-                localStorage.removeItem('ict_questions');
-                init();
-                renderEditForm();
-                alert("คืนค่าเริ่มต้นเรียบร้อยแล้ว กดยกเลิกเพื่อกลับไปหน้าเกม");
-            }
-        }
-
-        // โหลดข้อมูล
-        init();
+        // เริ่มต้นดึงข้อมูล
+        loadDataFromCloud();
     </script>
 </body>
 </html>
