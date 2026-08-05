@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมตอบปัญหา ICT ระดับมัธยมศึกษาตอนปลาย</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Prompt', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-container {
+            text-align: center;
+            width: 100%;
+            max-width: 1000px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        h1 { margin: 10px 0; font-size: 2.2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        h2 { font-size: 1.1rem; font-weight: 300; color: #b2bec3; margin: 0; }
+
+        .btn-settings {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-settings:hover { background: rgba(255, 255, 255, 0.4); }
+
+        /* Game Board */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .card {
+            border-radius: 12px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            user-select: none;
+            color: #fff;
+        }
+
+        /* โทนสีป้ายตามคะแนน */
+        .card-50 { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); } /* ฟ้า */
+        .card-100 { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); } /* เขียว */
+        .card-150 { background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%); color: #2d3436; } /* เหลือง (ข้อความเข้ม) */
+        .card-200 { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); } /* แดง */
+        .card-default { background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.4);
+        }
+
+        .card.opened {
+            background: #2d3436;
+            color: #636e72;
+            cursor: default;
+            transform: none;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        .card-score {
+            position: absolute;
+            bottom: 5px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            font-size: 0.9rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: normal;
+            color: #fff;
+        }
+
+        /* Modal Play */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #fff;
+            color: #2d3436;
+            width: 90%;
+            max-width: 700px;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            animation: popIn 0.3s ease-out forwards;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .badge-play { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 15px; background: #e17055; color: white;}
+        .q-img-preview { max-width: 100%; max-height: 250px; border-radius: 10px; margin-bottom: 15px; object-fit: contain; }
+        .q-text { font-size: 1.6rem; margin-bottom: 25px; line-height: 1.4; }
+        .a-text { display: none; font-size: 1.4rem; color: #00b894; font-weight: bold; margin-bottom: 25px; background: #e8f8f5; padding: 15px; border-radius: 10px; }
+        
+        .btn { padding: 10px 20px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; margin: 5px; transition: 0.2s; }
+        .btn-primary { background: #0984e3; color: white; }
+        .btn-secondary { background: #b2bec3; color: #2d3436; }
+        .btn-danger { background: #e74c3c; color: white; padding: 5px 10px; font-size: 0.9rem; }
+        .btn:hover { opacity: 0.8; }
+
+        /* Edit Screen */
+        #editScreen {
+            display: none;
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 20px;
+            border-radius: 12px;
+            height: 85vh;
+            overflow-y: auto;
+        }
+
+        .edit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .edit-header h2 { color: #2d3436; font-size: 1.6rem; font-weight: bold; margin:0;}
+        
+        .edit-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+
+        .edit-item {
+            background: #f5f6fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #0984e3;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .edit-item label { font-weight: bold; font-size: 0.9rem; color: #636e72;}
+        .edit-row { display: flex; gap: 15px; align-items: center; flex-wrap: wrap;}
+        
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #dfe6e9;
+            border-radius: 5px;
+            font-family: 'Prompt', sans-serif;
+        }
+        input[type="number"] { width: 100px; }
+        input[type="file"] { font-size: 0.9rem; }
+        
+        .image-preview-box { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+        .image-preview-box img { height: 60px; border-radius: 5px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+    <!-- หน้าเกมหลัก -->
+    <div id="gameScreen" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <div class="header-container">
+            <h1>ตอบปัญหา ICT ระดับมัธยมศึกษาตอนปลาย</h1>
+            <h2>รอบชิงชนะเลิศ ณ โรงเรียนโพนทองพัฒนาวิทยา</h2>
+            <h2>วันที่ 7 สิงหาคม 2569 ณ ห้องคอมพิวเตอร์ 3</h2>
+            <button class="btn-settings" onclick="openEditScreen()">⚙️ ตั้งค่าคำถาม</button>
+        </div>
+        <div class="board" id="board"></div>
+    </div>
+
+    <!-- หน้าต่างแสดงคำถามตอนเล่น -->
+    <div class="modal" id="playModal">
+        <div class="modal-content">
+            <div id="playBadge" class="badge-play"></div>
+            
+            <!-- ส่วนแสดงรูปภาพ (ถ้ามี) -->
+            <div id="playImageContainer" style="display:none;">
+                <img id="playImage" class="q-img-preview" src="">
+            </div>
+            
+            <div class="q-text" id="playQuestion"></div>
+            <div class="a-text" id="playAnswer"></div>
+            
+            <button class="btn btn-primary" id="btnShowAns" onclick="showAnswer()">ดูเฉลย</button>
+            <button class="btn btn-secondary" onclick="closePlayModal()">ปิดหน้าต่าง</button>
+        </div>
+    </div>
+
+    <!-- หน้าตั้งค่าคำถาม (Edit Screen) -->
+    <div id="editScreen">
+        <div class="edit-header">
+            <h2>⚙️ ตั้งค่าคำถาม-คำตอบ (25 ป้าย)</h2>
+            <div>
+                <button class="btn btn-secondary" onclick="resetToDefault()">คืนค่าเริ่มต้น</button>
+                <button class="btn btn-secondary" onclick="closeEditScreen()">ยกเลิก</button>
+                <button class="btn btn-primary" onclick="saveQuestions()">💾 บันทึกข้อมูล</button>
+            </div>
+        </div>
+        <div class="edit-grid" id="editFormGrid"></div>
+    </div>
+
+    <script>
+        // ข้อมูลเริ่มต้น 25 ข้อ (เพิ่ม properties image)
+        const defaultQuestions = [
+            { score: 50, q: "จากรูปคือโปรแกรมชื่ออะไร ใช้สำหรับทำอะไร (สัญลักษณ์ตัว W)", a: "ไมโครซอฟท์ เวิร์ด (Microsoft Word)", image: "" },
+            { score: 100, q: "จากรูปคือสัญลักษณ์ของโปรแกรมหรือแอพพลิเคชั่นใด ใช้ทำอะไร (สัญลักษณ์วงกลม C)", a: "Canva ใช้ออกแบบกราฟิก โปสเตอร์ สไลด์ งานนำเสนอ", image: "" },
+            { score: 150, q: "3, 8, 14, 21, 29, A, B จงหา A+B", a: "86 (A=38, B=48)", image: "" },
+            { score: 200, q: "ให้นักเรียนเขียนชื่อ AI ที่นักเรียนรู้จักมาให้ได้มากที่สุด", a: "เช่น ChatGPT, Cl‎aude, Ge‎mini, DeepSeek, Siri", image: "" },
+            { score: 50, q: "เมื่อคุณแชร์ตำแหน่งตัวเองผ่าน LINE หรือ Google Maps ระบบใช้เทคโนโลยีใด", a: "GPS", image: "" },
+            { score: 100, q: "โปรแกรม Excel ใช้สูตร =SUM(10,20,30) จะได้คำตอบเท่าไร", a: "60", image: "" },
+            { score: 150, q: "สัญลักษณ์ Flowchart รูปสี่เหลี่ยมด้านขนาน มีความหมายว่าอย่างไร?", a: "Input / output (รับข้อมูล / แสดงข้อมูล)", image: "" },
+            { score: 200, q: "จากโปรแกรม python: a = 5, b = 3, c = a * b, print(c + 2) จะมีผลลัพธ์เท่าใด?", a: "17", image: "" },
+            { score: 50, q: "ปุ่มลัด Ctrl + S ในโปรแกรม Microsoft Word ใช้ทำอะไร", a: "ใช้สำหรับบันทึกไฟล์งาน (Save)", image: "" },
+            { score: 100, q: "อุปกรณ์ใดทำหน้าที่เหมือนเป็น 'สมอง' ของคอมพิวเตอร์?", a: "CPU (หน่วยประมวลผลกลาง)", image: "" },
+            { score: 150, q: "www ย่อมาจากคำว่าอะไร", a: "World Wide Web (เวิลด์ ไวด์ เว็บ)", image: "" },
+            { score: 200, q: "จงเขียนตัวอย่าง IP Address มา 1 IP", a: "เช่น 192.168.1.1", image: "" },
+            { score: 50, q: "ปุ่มบนคีย์บอร์ดที่ใช้ “พิมพ์เว้นวรรค” คือปุ่มอะไร", a: "ปุ่ม Spacebar (สเปซบาร์)", image: "" },
+            { score: 100, q: "จากภาพคือ Syntax ของภาษาโปรแกรมใด: print('Hello, World!')", a: "Python", image: "" },
+            { score: 150, q: "อินเทอร์เน็ตของสรรพสิ่ง (Internet of Things: IoT) คืออะไร", a: "เทคโนโลยีที่ทำให้อุปกรณ์ต่าง ๆ เชื่อมต่ออินเทอร์เน็ตได้", image: "" },
+            { score: 200, q: "5G ต่างจาก 4G อย่างไรอธิบายง่ายๆคร่าวๆ", a: "5G เร็วกว่า เสถียรกว่า และรองรับการเชื่อมต่อพร้อมกันได้มากกว่า", image: "" },
+            { score: 50, q: "ให้นักเรียนเขียนอุปกรณ์รับเข้าข้อมูล (input hardware) อย่างน้อย 2 ชนิด", a: "เช่น คีย์บอร์ด, เมาส์, สแกนเนอร์, ไมโครโฟน", image: "" },
+            { score: 100, q: "ยกตัวอย่างเกมที่ใช้ AR (Augmented Reality) ที่นักเรียนรู้จัก", a: "เช่น Pokémon GO, Jurassic World Alive", image: "" },
+            { score: 150, q: "หากมีคนส่งลิงก์แปลก ๆ มาให้ในแชต ควรทำอย่างไร", a: "ไม่กดลิงก์, ตรวจสอบกับผู้ส่งก่อน, แจ้งผู้ปกครอง/ครู", image: "" },
+            { score: 200, q: "เทคโนโลยี Deepfake คืออะไร และมีความเสี่ยงอย่างไร", a: "เทคโนโลยีที่ใช้ AI สร้างภาพ/เสียงปลอม เสี่ยงต่อการหลอกลวง", image: "" },
+            { score: 50, q: "อุปกรณ์ที่ใช้เก็บข้อมูลถาวรในคอมพิวเตอร์เรียกว่าอะไร?", a: "ฮาร์ดดิสก์ (HDD) หรือ SSD", image: "" },
+            { score: 100, q: "Google Forms ใช้สำหรับทำอะไร?", a: "สร้างแบบสอบถามหรือแบบทดสอบออนไลน์", image: "" },
+            { score: 150, q: "ไวรัสคอมพิวเตอร์คืออะไร?", a: "โปรแกรมมุ่งร้ายที่สร้างมาเพื่อก่อกวนหรือทำลายระบบ", image: "" },
+            { score: 200, q: "Phishing (ฟิชชิ่ง) คือการหลอกลวงแบบใด?", a: "หลอกลวงผ่านอีเมลหรือเว็บปลอมเพื่อเอาข้อมูลส่วนตัว", image: "" },
+            { score: 100, q: "ไฟล์นามสกุล .mp4 เป็นไฟล์ประเภทใด?", a: "ไฟล์วิดีโอ", image: "" }
+        ];
+
+        let questions = [];
+
+        function init() {
+            const saved = localStorage.getItem('ict_questions');
+            if (saved) {
+                questions = JSON.parse(saved);
+            } else {
+                questions = JSON.parse(JSON.stringify(defaultQuestions));
+            }
+            renderBoard();
+        }
+
+        // คืนค่าคลาสสีตามคะแนน
+        function getColorClass(score) {
+            const s = parseInt(score);
+            if(s === 50) return 'card-50';
+            if(s === 100) return 'card-100';
+            if(s === 150) return 'card-150';
+            if(s === 200) return 'card-200';
+            return 'card-default';
+        }
+
+        // --- ระบบกระดานเกม (Game Board) ---
+        function renderBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            questions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = `card ${getColorClass(q.score)}`;
+                card.innerHTML = `
+                    ${index + 1}
+                    <div class="card-score">${q.score} pts</div>
+                `;
+                card.onclick = () => openCard(index, card);
+                board.appendChild(card);
+            });
+        }
+
+        function openCard(index, cardEl) {
+            const q = questions[index];
+            document.getElementById('playBadge').innerText = `ป้ายที่ ${index + 1} | คะแนน: ${q.score}`;
+            document.getElementById('playQuestion').innerText = q.q;
+            document.getElementById('playAnswer').innerText = "เฉลย: " + q.a;
+            
+            // แสดงรูปภาพถ้ามี
+            const imgContainer = document.getElementById('playImageContainer');
+            const imgTag = document.getElementById('playImage');
+            if(q.image && q.image.trim() !== "") {
+                imgTag.src = q.image;
+                imgContainer.style.display = 'block';
+            } else {
+                imgTag.src = "";
+                imgContainer.style.display = 'none';
+            }
+            
+            document.getElementById('playAnswer').style.display = 'none';
+            document.getElementById('btnShowAns').style.display = 'inline-block';
+            
+            cardEl.classList.add('opened');
+            cardEl.className = 'card opened'; // ลบสีพื้นหลังออกเมื่อเปิดแล้ว
+            document.getElementById('playModal').style.display = 'flex';
+        }
+
+        function showAnswer() {
+            document.getElementById('playAnswer').style.display = 'block';
+            document.getElementById('btnShowAns').style.display = 'none';
+        }
+
+        function closePlayModal() {
+            document.getElementById('playModal').style.display = 'none';
+        }
+
+        // --- ระบบตั้งค่า (Edit Screen) ---
+        function openEditScreen() {
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('editScreen').style.display = 'block';
+            renderEditForm();
+        }
+
+        function closeEditScreen() {
+            document.getElementById('editScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'flex';
+        }
+
+        function renderEditForm() {
+            const grid = document.getElementById('editFormGrid');
+            grid.innerHTML = '';
+            questions.forEach((q, index) => {
+                const item = document.createElement('div');
+                item.className = 'edit-item';
+                
+                // รูปภาพ preview HTML
+                let imgPreviewHTML = '';
+                if(q.image && q.image.trim() !== "") {
+                    imgPreviewHTML = `<img src="${q.image}"><button class="btn-danger" onclick="removeImage(${index})">ลบรูป</button>`;
+                }
+
+                item.innerHTML = `
+                    <div class="edit-row">
+                        <label style="width: 80px;">ป้ายที่ ${index + 1}</label>
+                        <label>คะแนน:</label>
+                        <input type="number" id="score_${index}" value="${q.score}" title="50=ฟ้า, 100=เขียว, 150=เหลือง, 200=แดง">
+                    </div>
+                    <input type="text" id="q_${index}" value="${q.q.replace(/"/g, '&quot;')}" placeholder="คำถาม...">
+                    <input type="text" id="a_${index}" value="${q.a.replace(/"/g, '&quot;')}" placeholder="เฉลย...">
+                    <div class="edit-row">
+                        <label>แนบรูปภาพ:</label>
+                        <input type="file" id="file_${index}" accept="image/*" onchange="handleImageUpload(event, ${index})">
+                    </div>
+                    <div class="image-preview-box" id="imgPreview_${index}">${imgPreviewHTML}</div>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        // ระบบบีบอัดและอัปโหลดรูปภาพ
+        function handleImageUpload(event, index) {
+            const file = event.target.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // สร้าง Canvas เพื่อย่อขนาดภาพ (ป้องกัน LocalStorage เต็ม)
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600;
+                    const MAX_HEIGHT = 450;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // แปลงเป็น Base64 (Quality 0.7)
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    questions[index].image = dataUrl; // อัปเดตใน Array
+                    
+                    // แสดง Preview
+                    document.getElementById(`imgPreview_${index}`).innerHTML = `<img src="${dataUrl}"><button class="btn-danger" onclick="removeImage(${index})">ลบรูป</button>`;
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // ลบรูปภาพ
+        function removeImage(index) {
+            questions[index].image = "";
+            document.getElementById(`imgPreview_${index}`).innerHTML = "";
+            document.getElementById(`file_${index}`).value = "";
+        }
+
+        function saveQuestions() {
+            try {
+                for (let i = 0; i < 25; i++) {
+                    questions[i].score = document.getElementById(`score_${i}`).value;
+                    questions[i].q = document.getElementById(`q_${i}`).value;
+                    questions[i].a = document.getElementById(`a_${i}`).value;
+                }
+                localStorage.setItem('ict_questions', JSON.stringify(questions));
+                alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
+                renderBoard();
+                closeEditScreen();
+            } catch (e) {
+                // แจ้งเตือนกรณีหน่วยความจำเต็ม
+                alert("ไม่สามารถบันทึกได้! เนื่องจากขนาดรูปภาพรวมกันใหญ่เกินไป กรุณาลบรูปภาพบางส่วนออกแล้วลองใหม่");
+            }
+        }
+
+        function resetToDefault() {
+            if(confirm("คุณต้องการล้างข้อมูลที่แก้ไข และคืนค่ากลับเป็นชุดคำถามเริ่มต้นหรือไม่?")) {
+                localStorage.removeItem('ict_questions');
+                init();
+                renderEditForm();
+                alert("คืนค่าเริ่มต้นเรียบร้อยแล้ว กดยกเลิกเพื่อกลับไปหน้าเกม");
+            }
+        }
+
+        // โหลดข้อมูล
+        init();
+    </script>
+</body>
+</html>
