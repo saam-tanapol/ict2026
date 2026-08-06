@@ -134,8 +134,15 @@
 
         .badge-play { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 15px; background: #e17055; color: white;}
         .q-img-preview { max-width: 100%; max-height: 250px; border-radius: 10px; margin-bottom: 15px; object-fit: contain; }
-        .q-text { font-size: 1.6rem; margin-bottom: 25px; line-height: 1.4; }
-        .a-text { display: none; font-size: 1.4rem; color: #00b894; font-weight: bold; margin-bottom: 25px; background: #e8f8f5; padding: 15px; border-radius: 10px; }
+        /* เพิ่ม white-space: pre-wrap; ให้รองรับการกด Enter */
+        .q-text { font-size: 1.6rem; margin-bottom: 25px; line-height: 1.4; white-space: pre-wrap; text-align: left; }
+        .a-text { display: block; font-size: 1.4rem; color: #00b894; font-weight: bold; margin-top: 15px; margin-bottom: 25px; background: #e8f8f5; padding: 15px; border-radius: 10px; white-space: pre-wrap; text-align: left; }
+        
+        /* ปรับสไตล์ของช่องพิมพ์ให้เป็นแบบ textarea */
+        input[type="text"], input[type="number"], textarea {
+            width: 100%; padding: 8px; border: 1px solid #dfe6e9; border-radius: 5px; font-family: 'Prompt', sans-serif;
+        }
+        textarea { resize: vertical; min-height: 80px; }
         
         .btn { padding: 10px 20px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; margin: 5px; transition: 0.2s; }
         .btn-primary { background: #0984e3; color: white; }
@@ -204,11 +211,20 @@
     <div class="modal" id="playModal">
         <div class="modal-content">
             <div id="playBadge" class="badge-play"></div>
+            
             <div id="playImageContainer" style="display:none;">
                 <img id="playImage" class="q-img-preview" src="">
             </div>
             <div class="q-text" id="playQuestion"></div>
-            <div class="a-text" id="playAnswer"></div>
+            
+            <!-- กล่องรวมเฉลย (ข้อความ + รูปเฉลย) -->
+            <div id="playAnswerContainer" style="display:none;">
+                <div id="playAnswerImageContainer" style="display:none;">
+                    <img id="playAnswerImage" class="q-img-preview" src="">
+                </div>
+                <div class="a-text" id="playAnswer"></div>
+            </div>
+            
             <button class="btn btn-primary" id="btnShowAns" onclick="showAnswer()">ดูเฉลย</button>
             <button class="btn btn-secondary" onclick="closePlayModal()">ปิดหน้าต่าง</button>
         </div>
@@ -343,8 +359,11 @@
             const q = questions[index];
             document.getElementById('playBadge').innerText = `ป้ายที่ ${index + 1} | คะแนน: ${q.score}`;
             document.getElementById('playQuestion').innerText = q.q;
-            document.getElementById('playAnswer').innerText = "เฉลย: " + q.a;
             
+            // ใส่ข้อความเฉลย
+            document.getElementById('playAnswer').innerText = q.a;
+            
+            // จัดการรูปภาพคำถาม
             const imgContainer = document.getElementById('playImageContainer');
             const imgTag = document.getElementById('playImage');
             if(q.image && q.image.trim() !== "") {
@@ -354,8 +373,18 @@
                 imgTag.src = "";
                 imgContainer.style.display = 'none';
             }
+
+            // จัดการรูปภาพเฉลย (เตรียมไว้ แต่ยังไม่แสดงจนกว่าจะกดดูเฉลย)
+            const ansImgContainer = document.getElementById('playAnswerImageContainer');
+            const ansImgTag = document.getElementById('playAnswerImage');
+            if(q.a_image && q.a_image.trim() !== "") {
+                ansImgTag.src = q.a_image;
+            } else {
+                ansImgTag.src = "";
+            }
             
-            document.getElementById('playAnswer').style.display = 'none';
+            // ซ่อนกล่องเฉลยไว้ก่อนตอนเปิดป้ายครั้งแรก
+            document.getElementById('playAnswerContainer').style.display = 'none';
             document.getElementById('btnShowAns').style.display = 'inline-block';
             
             cardEl.classList.add('opened');
@@ -373,29 +402,43 @@
                 
                 let imgPreviewHTML = '';
                 if(q.image && q.image.trim() !== "") {
-                    imgPreviewHTML = `<img src="${q.image}"><button class="btn-danger" onclick="removeImage(${index})">ลบรูป</button>`;
+                    imgPreviewHTML = `<img src="${q.image}"><button class="btn-danger" onclick="removeImage(${index}, 'q')">ลบรูปคำถาม</button>`;
+                }
+
+                let ansImgPreviewHTML = '';
+                if(q.a_image && q.a_image.trim() !== "") {
+                    ansImgPreviewHTML = `<img src="${q.a_image}"><button class="btn-danger" onclick="removeImage(${index}, 'a')">ลบรูปเฉลย</button>`;
                 }
 
                 item.innerHTML = `
                     <div class="edit-row">
                         <label style="width: 80px;">ป้ายที่ ${index + 1}</label>
                         <label>คะแนน:</label>
-                        <input type="number" id="score_${index}" value="${q.score}">
+                        <input type="number" id="score_${index}" value="${q.score}" title="50=ฟ้า, 100=เขียว, 150=เหลือง, 200=แดง">
                     </div>
-                    <input type="text" id="q_${index}" value="${q.q.replace(/"/g, '&quot;')}" placeholder="คำถาม...">
-                    <input type="text" id="a_${index}" value="${q.a.replace(/"/g, '&quot;')}" placeholder="เฉลย...">
+                    
+                    <label>คำถาม:</label>
+                    <textarea id="q_${index}" placeholder="พิมพ์คำถาม... (กด Enter เพื่อขึ้นบรรทัดใหม่)">${q.q}</textarea>
                     <div class="edit-row">
-                        <label>แนบรูปภาพใหม่:</label>
-                        <input type="file" id="file_${index}" accept="image/*" onchange="handleImageUpload(event, ${index})">
+                        <label>แนบรูปภาพคำถาม:</label>
+                        <input type="file" id="file_q_${index}" accept="image/*" onchange="handleImageUpload(event, ${index}, 'q')">
                     </div>
-                    <div class="image-preview-box" id="imgPreview_${index}">${imgPreviewHTML}</div>
+                    <div class="image-preview-box" id="imgPreview_q_${index}">${imgPreviewHTML}</div>
+                    
+                    <label style="margin-top: 10px;">เฉลย:</label>
+                    <textarea id="a_${index}" placeholder="พิมพ์เฉลย... (กด Enter เพื่อขึ้นบรรทัดใหม่)">${q.a}</textarea>
+                    <div class="edit-row">
+                        <label>แนบรูปภาพเฉลย:</label>
+                        <input type="file" id="file_a_${index}" accept="image/*" onchange="handleImageUpload(event, ${index}, 'a')">
+                    </div>
+                    <div class="image-preview-box" id="imgPreview_a_${index}">${ansImgPreviewHTML}</div>
                 `;
                 grid.appendChild(item);
             });
         }
 
         // ระบบบีบอัดภาพและแปลงเป็น Text (Base64) เพื่อเก็บบน Database แทน Storage
-        function handleImageUpload(event, index) {
+        window.handleImageUpload = (event, index, type = 'q') => {
             const file = event.target.files[0];
             if(!file) return;
 
@@ -404,9 +447,8 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    // ลดขนาดภาพให้เล็กที่สุดเพื่อไม่ให้หนักฐานข้อมูล
-                    const MAX_WIDTH = 500;
-                    const MAX_HEIGHT = 400;
+                    const MAX_WIDTH = 600;
+                    const MAX_HEIGHT = 450;
                     let width = img.width;
                     let height = img.height;
 
@@ -421,16 +463,32 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // แปลงเป็น Base64 (Quality 0.6)
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
-                    questions[index].image = dataUrl;
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
                     
-                    document.getElementById(`imgPreview_${index}`).innerHTML = `<img src="${dataUrl}"><button class="btn-danger" onclick="removeImage(${index})">ลบรูป</button>`;
+                    if (type === 'q') {
+                        questions[index].image = dataUrl;
+                        document.getElementById(`imgPreview_q_${index}`).innerHTML = `<img src="${dataUrl}"><button class="btn-danger" onclick="removeImage(${index}, 'q')">ลบรูปคำถาม</button>`;
+                    } else {
+                        questions[index].a_image = dataUrl;
+                        document.getElementById(`imgPreview_a_${index}`).innerHTML = `<img src="${dataUrl}"><button class="btn-danger" onclick="removeImage(${index}, 'a')">ลบรูปเฉลย</button>`;
+                    }
                 }
                 img.src = e.target.result;
             }
             reader.readAsDataURL(file);
-        }
+        };
+
+        window.removeImage = (index, type = 'q') => {
+            if (type === 'q') {
+                questions[index].image = "";
+                document.getElementById(`imgPreview_q_${index}`).innerHTML = "";
+                document.getElementById(`file_q_${index}`).value = "";
+            } else {
+                questions[index].a_image = "";
+                document.getElementById(`imgPreview_a_${index}`).innerHTML = "";
+                document.getElementById(`file_a_${index}`).value = "";
+            }
+        };
 
         // บันทึกข้อมูลทั้งหมดลง Firestore ทีละเอกสาร (ป้องกันข้อมูลเกิน 1MB)
         async function saveQuestionsToCloud(silent = false) {
@@ -478,7 +536,16 @@
             document.getElementById('gameScreen').style.display = 'flex';
         };
         window.showAnswer = () => {
-            document.getElementById('playAnswer').style.display = 'block';
+            // แสดงกล่องเฉลยทั้งหมด
+            document.getElementById('playAnswerContainer').style.display = 'block';
+            
+            // ถ้ามีรูปเฉลย ให้แสดงรูปเฉลยด้วย
+            const qImg = document.getElementById('playAnswerImage').src;
+            if(qImg && qImg.trim() !== "" && !qImg.endsWith(window.location.href)) {
+                document.getElementById('playAnswerImageContainer').style.display = 'block';
+            }
+            
+            // ซ่อนปุ่มดูเฉลย
             document.getElementById('btnShowAns').style.display = 'none';
         };
         window.closePlayModal = () => {
